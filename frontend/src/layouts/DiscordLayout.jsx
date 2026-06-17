@@ -6,11 +6,15 @@ import {
   Hash,
   Paperclip,
   Send,
-  Search,
   LogOut,
   Plus,
-  Smile,
-  Gift,
+  MessageCircle,
+  Bell,
+  Settings,
+  Zap,
+  Eye,
+  EyeOff,
+  FileText,
 } from 'lucide-react'
 import './DiscordLayout.css'
 
@@ -21,15 +25,27 @@ export function DiscordLayout({
   servers,
   members,
   messages,
+  users,
+  selectedDMUser,
+  dmMessages,
   draft,
+  dmDraft,
+  isAdmin,
   onSelectServer,
   onSelectChannel,
+  onSelectDMUser,
   onSendMessage,
+  onSendDM,
   onDraftChange,
+  onDMDraftChange,
   onLogout,
+  onShowAdmin,
+  onShowSettings,
 }) {
   const [mobileChannelVisible, setMobileChannelVisible] = useState(false)
   const [mobileMemberVisible, setMobileMemberVisible] = useState(false)
+  const [showDMList, setShowDMList] = useState(false)
+  const [notifications, setNotifications] = useState(0)
 
   const initials = (name = '') => {
     return name
@@ -59,44 +75,116 @@ export function DiscordLayout({
     }
   }
 
+  const handleSendDM = (e) => {
+    e.preventDefault()
+    if (dmDraft.trim()) {
+      onSendDM(dmDraft)
+      onDMDraftChange('')
+    }
+  }
+
+  const isInDM = !!selectedDMUser
+
   return (
     <div className="discord-app">
       {/* ========== SERVER LIST ========== */}
       <div className="discord-server-list">
+        <button
+          className={`discord-server-icon ${showDMList ? 'active' : ''}`}
+          onClick={() => {
+            setShowDMList(!showDMList)
+            onSelectServer(null)
+            onSelectChannel(null)
+          }}
+          title="Messages privés"
+          style={{ background: '#5865f2' }}
+        >
+          <MessageCircle size={20} />
+        </button>
+
+        <div className="discord-server-sep" />
+
         {servers.map((server, index) => (
           <button
             key={server.id}
             className={`discord-server-icon ${server.id === selectedServer?.id ? 'active' : ''}`}
             style={{ background: getServerColor(index) }}
-            onClick={() => onSelectServer(server.id)}
+            onClick={() => {
+              onSelectServer(server.id)
+              setShowDMList(false)
+            }}
             title={server.name}
           >
             {initials(server.name)}
           </button>
         ))}
+
         <div className="discord-server-sep" />
-        <button className="discord-server-icon discord-server-add" title="Ajouter un serveur">
+
+        <button
+          className="discord-server-icon discord-server-add"
+          title="Ajouter un serveur"
+        >
           <Plus size={20} />
         </button>
+
+        {isAdmin && (
+          <button
+            className="discord-server-icon discord-server-admin"
+            title="Panneau Admin"
+            onClick={onShowAdmin}
+            style={{ background: '#f04747' }}
+          >
+            <Zap size={20} />
+          </button>
+        )}
       </div>
 
-      {/* ========== CHANNEL LIST ========== */}
+      {/* ========== CHANNEL/DM LIST ========== */}
       <div
         className={`discord-channel-list ${mobileChannelVisible ? 'visible' : ''}`}
         onClick={() => setMobileChannelVisible(false)}
       >
-        {selectedServer && (
+        {showDMList ? (
+          <>
+            <div className="discord-server-header">
+              Messages privés
+            </div>
+            <div className="discord-channel-list-scroll">
+              {users && users.length > 0 ? (
+                users
+                  .filter((u) => u.id !== user?.id)
+                  .map((dmUser) => (
+                    <button
+                      key={dmUser.id}
+                      className={`discord-channel-item ${dmUser.id === selectedDMUser?.id ? 'active' : ''}`}
+                      onClick={() => {
+                        onSelectDMUser(dmUser.id)
+                        setMobileChannelVisible(false)
+                      }}
+                    >
+                      <MessageCircle size={16} />
+                      <span className="discord-channel-name">{dmUser.name}</span>
+                    </button>
+                  ))
+              ) : (
+                <p style={{ padding: '12px', color: '#8e9297', fontSize: '12px' }}>
+                  Aucun utilisateur
+                </p>
+              )}
+            </div>
+          </>
+        ) : selectedServer ? (
           <>
             <div className="discord-server-header">
               {selectedServer.name}
             </div>
 
             <div className="discord-channel-list-scroll">
-              {/* GÉNÉRAL Section */}
               {selectedServer.channels?.some((ch) => ch.type === 'chat') && (
                 <>
                   <div className="discord-channel-section">
-                    GÉNÉRAL
+                    TEXTE
                   </div>
                   {selectedServer.channels
                     ?.filter((ch) => ch.type === 'chat')
@@ -116,7 +204,6 @@ export function DiscordLayout({
                 </>
               )}
 
-              {/* FILES Section */}
               {selectedServer.channels?.some((ch) => ch.type === 'files') && (
                 <>
                   <div className="discord-channel-section">
@@ -133,38 +220,31 @@ export function DiscordLayout({
                           setMobileChannelVisible(false)
                         }}
                       >
-                        <Hash size={16} />
+                        <FileText size={16} />
                         <span className="discord-channel-name">{channel.name}</span>
                       </button>
                     ))}
                 </>
               )}
             </div>
-
-            {/* User Bar */}
-            <div className="discord-user-bar">
-              <div
-                className="discord-user-avatar"
-                style={{ background: '#5865f2' }}
-              >
-                {initials(user?.name)}
-              </div>
-              <div className="discord-user-info">
-                <div className="discord-user-name">{user?.name || 'User'}</div>
-                <div className="discord-user-status">● En ligne</div>
-              </div>
-              <div className="discord-user-icons">
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  title="Déconnexion"
-                >
-                  <LogOut size={16} />
-                </button>
-              </div>
-            </div>
           </>
-        )}
+        ) : null}
+
+        {/* User Bar */}
+        <div className="discord-user-bar">
+          <div className="discord-user-avatar" style={{ background: '#5865f2' }}>
+            {initials(user?.name)}
+          </div>
+          <div className="discord-user-info">
+            <div className="discord-user-name">{user?.name || 'User'}</div>
+            <div className="discord-user-status">● En ligne</div>
+          </div>
+          <div className="discord-user-icons">
+            <button type="button" onClick={onLogout} title="Déconnexion">
+              <LogOut size={16} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ========== MAIN CHAT AREA ========== */}
@@ -186,22 +266,37 @@ export function DiscordLayout({
           >
             <Menu size={20} />
           </button>
-          <Hash size={20} style={{ color: '#b5bac1' }} />
-          <span className="discord-channel-header-title">
-            {selectedChannel?.name || 'Canal'}
-          </span>
-          {selectedServer?.description && (
-            <span className="discord-channel-header-desc">
-              {selectedServer.description}
-            </span>
+
+          {isInDM ? (
+            <>
+              <MessageCircle size={20} style={{ color: '#b5bac1' }} />
+              <span className="discord-channel-header-title">
+                {selectedDMUser?.name || 'Message privé'}
+              </span>
+            </>
+          ) : (
+            <>
+              <Hash size={20} style={{ color: '#b5bac1' }} />
+              <span className="discord-channel-header-title">
+                {selectedChannel?.name || 'Canal'}
+              </span>
+              {selectedServer?.description && (
+                <span className="discord-channel-header-desc">
+                  {selectedServer.description}
+                </span>
+              )}
+            </>
           )}
+
           <div className="discord-header-icons">
             <button type="button" title="Notifications">
-              🔔
+              <Bell size={18} />
             </button>
-            <button type="button" title="Épinglés">
-              📌
-            </button>
+            {!isAdmin && (
+              <button type="button" title="Paramètres" onClick={onShowSettings}>
+                <Settings size={18} />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setMobileMemberVisible(!mobileMemberVisible)}
@@ -210,55 +305,72 @@ export function DiscordLayout({
             >
               <Users size={20} />
             </button>
-            <button type="button" title="Recherche">
-              🔍
-            </button>
           </div>
         </div>
 
         {/* Messages */}
         <div className="discord-messages">
-          {messages && messages.length > 0 ? (
+          {isInDM ? (
+            dmMessages && dmMessages.length > 0 ? (
+              dmMessages.map((message, index) => (
+                <div key={index} className="discord-msg">
+                  <div className="discord-msg-avatar" style={{ background: '#5865f2' }}>
+                    {initials(message.author)}
+                  </div>
+                  <div className="discord-msg-content">
+                    <div className="discord-msg-header">
+                      <span className="discord-msg-author">{message.author}</span>
+                      <span className="discord-msg-time">{formatTime(message.createdAt)}</span>
+                    </div>
+                    <div className="discord-msg-text">{message.content}</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="discord-empty-state">Aucun message. Commencez la conversation !</div>
+            )
+          ) : messages && messages.length > 0 ? (
             messages.map((message, index) => (
               <div key={index} className="discord-msg">
-                <div
-                  className="discord-msg-avatar"
-                  style={{
-                    background: getServerColor(index),
-                  }}
-                >
+                <div className="discord-msg-avatar" style={{ background: getServerColor(index) }}>
                   {initials(message.author)}
                 </div>
                 <div className="discord-msg-content">
                   <div className="discord-msg-header">
-                    <span className="discord-msg-author">
-                      {message.author}
-                    </span>
-                    <span className="discord-msg-time">
-                      {formatTime(message.createdAt)}
-                    </span>
+                    <span className="discord-msg-author">{message.author}</span>
+                    <span className="discord-msg-time">{formatTime(message.createdAt)}</span>
                   </div>
-                  <div className="discord-msg-text">
-                    {message.content}
-                  </div>
+                  <div className="discord-msg-text">{message.content}</div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="discord-empty-state">
-              Aucun message. Commencez la conversation !
-            </div>
+            <div className="discord-empty-state">Aucun message. Commencez la conversation !</div>
           )}
         </div>
 
         {/* Input Area */}
-        {selectedChannel?.type === 'chat' && (
+        {isInDM ? (
+          <div className="discord-input-area">
+            <form onSubmit={handleSendDM} className="discord-input-box">
+              <button type="button" title="Joindre un fichier">
+                <Paperclip size={18} />
+              </button>
+              <input
+                type="text"
+                value={dmDraft}
+                onChange={(e) => onDMDraftChange(e.target.value)}
+                placeholder={`Message à ${selectedDMUser?.name || 'utilisateur'}`}
+              />
+              <button type="submit" title="Envoyer">
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
+        ) : selectedChannel?.type === 'chat' ? (
           <div className="discord-input-area">
             <form onSubmit={handleSendMessage} className="discord-input-box">
-              <button
-                type="button"
-                title="Joindre un fichier"
-              >
+              <button type="button" title="Joindre un fichier">
                 <Paperclip size={18} />
               </button>
               <input
@@ -267,27 +379,16 @@ export function DiscordLayout({
                 onChange={(e) => onDraftChange(e.target.value)}
                 placeholder={`Envoyer un message à #${selectedChannel?.name || 'canal'}`}
               />
-              <div className="discord-input-right">
-                <button type="button" title="Cadeau">
-                  <Gift size={18} />
-                </button>
-                <button type="button" title="Emoji">
-                  <Smile size={18} />
-                </button>
-              </div>
               <button type="submit" title="Envoyer">
                 <Send size={18} />
               </button>
             </form>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ========== MEMBER LIST ========== */}
-      <div
-        className={`discord-member-list ${mobileMemberVisible ? 'visible' : ''}`}
-        onClick={() => setMobileMemberVisible(false)}
-      >
+      <div className={`discord-member-list ${mobileMemberVisible ? 'visible' : ''}`}>
         <div className="discord-member-section">
           MEMBRES — {members?.length || 0}
         </div>
@@ -315,24 +416,11 @@ export function DiscordLayout({
             </div>
           ))
         ) : (
-          <div style={{ color: '#8e9297', padding: '12px 8px' }}>
+          <div style={{ color: '#8e9297', padding: '12px 8px', fontSize: '12px' }}>
             Aucun membre
           </div>
         )}
       </div>
-
-      {/* Mobile Controls */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .icon-button[title="Canaux"] {
-            display: flex !important;
-            margin-right: 8px;
-          }
-          .icon-button[title="Membres"] {
-            display: flex !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }
