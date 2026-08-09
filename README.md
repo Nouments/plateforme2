@@ -50,4 +50,3 @@ Le mot de passe est ignoré en mode démo.
 - Notifications temps réel (SSE)
 - Rapport admin de présence comparé à l'emploi du temps (simplifié)
 
-> Note: cette version est un socle MVP pour démarrer vite. Le stockage de fichiers réels, la sécurité renforcée (JWT, RBAC strict), et la persistance en base de données peuvent être ajoutés ensuite.
