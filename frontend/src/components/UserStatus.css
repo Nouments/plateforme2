@@ -1,0 +1,183 @@
+.user-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-status-sm {
+  gap: 0.5rem;
+}
+
+.user-status-lg {
+  gap: 1rem;
+}
+
+.user-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5865f2, #7289da);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 2px solid #5865f2;
+  flex-shrink: 0;
+}
+
+.user-status-sm .user-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 0.8rem;
+  border-width: 1px;
+}
+
+.user-status-lg .user-avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 1rem;
+  border-width: 3px;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #2b2d31;
+  background: #8e9297;
+}
+
+.user-status-sm .status-indicator {
+  width: 10px;
+  height: 10px;
+  border-width: 1px;
+}
+
+.user-status-lg .status-indicator {
+  width: 16px;
+  height: 16px;
+  border-width: 3px;
+}
+
+.status-indicator.online {
+  background: #3ba55d;
+  animation: pulse-online 2s ease-in-out infinite;
+}
+
+.status-indicator.offline {
+  background: #8e9297;
+}
+
+@keyframes pulse-online {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  color: #dcddde;
+  font-weight: 500;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status-sm .user-name {
+  font-size: 0.85rem;
+}
+
+.user-online-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.user-online-status.online {
+  color: #3ba55d;
+}
+
+.user-online-status.offline {
+  color: #8e9297;
+}
+
+/* Status Badge */
+.user-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.user-status-badge.online {
+  background: #3ba55d20;
+  color: #3ba55d;
+}
+
+.user-status-badge.offline {
+  background: #8e929720;
+  color: #8e9297;
+}
+
+.badge-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Status Dot */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8e9297;
+  margin: 0 0.25rem;
+}
+
+.status-dot.online {
+  background: #3ba55d;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .user-status {
+    gap: 0.5rem;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+  }
+}

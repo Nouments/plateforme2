@@ -1,0 +1,397 @@
+.private-groups-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.private-groups-panel {
+  width: 100%;
+  max-width: 800px;
+  height: 90vh;
+  max-height: 600px;
+  background: #36393f;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #2c2f33;
+  background: #2f3136;
+}
+
+.pg-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.pg-close {
+  background: none;
+  border: none;
+  color: #99aab5;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pg-close:hover {
+  background: #2c2f33;
+  color: #ffffff;
+}
+
+.pg-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pg-list {
+  width: 250px;
+  border-right: 1px solid #2c2f33;
+  background: #2f3136;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.pg-create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #5865f2;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+}
+
+.pg-create-btn:hover {
+  background: #4752c4;
+}
+
+.pg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #40444b;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.pg-input,
+.pg-textarea {
+  background: #36393f;
+  border: 1px solid #2c2f33;
+  border-radius: 4px;
+  color: #dcddde;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pg-input:focus,
+.pg-textarea:focus {
+  border-color: #5865f2;
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
+}
+
+.pg-textarea {
+  resize: vertical;
+  min-height: 50px;
+}
+
+.pg-form-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pg-submit,
+.pg-cancel {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pg-submit {
+  background: #5865f2;
+  color: #ffffff;
+}
+
+.pg-submit:hover {
+  background: #4752c4;
+}
+
+.pg-cancel {
+  background: #40444b;
+  color: #dcddde;
+}
+
+.pg-cancel:hover {
+  background: #36393f;
+}
+
+.pg-empty,
+.pg-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #72767d;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.pg-item {
+  padding: 0.75rem;
+  background: #40444b;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.pg-item:hover {
+  background: #48505a;
+}
+
+.pg-item.active {
+  background: #5865f2;
+  border-color: #4752c4;
+}
+
+.pg-item-name {
+  font-weight: 500;
+  color: #dcddde;
+  margin-bottom: 0.25rem;
+}
+
+.pg-item.active .pg-item-name {
+  color: #ffffff;
+}
+
+.pg-item-members {
+  font-size: 0.8rem;
+  color: #72767d;
+}
+
+.pg-item.active .pg-item-members {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pg-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #36393f;
+}
+
+.pg-select-prompt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #72767d;
+  font-size: 0.95rem;
+}
+
+.pg-chat-header {
+  padding: 1rem;
+  border-bottom: 1px solid #2c2f33;
+  background: #2f3136;
+}
+
+.pg-chat-title {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.pg-chat-members {
+  font-size: 0.85rem;
+  color: #72767d;
+}
+
+.pg-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pg-chat-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #72767d;
+  font-size: 0.95rem;
+}
+
+.pg-message {
+  padding: 0.75rem 1rem;
+  background: #40444b;
+  border-radius: 6px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pg-message-author {
+  font-weight: 600;
+  color: #5865f2;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.pg-message-content {
+  color: #dcddde;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.pg-message-time {
+  font-size: 0.75rem;
+  color: #72767d;
+  margin-top: 0.25rem;
+  opacity: 0.7;
+}
+
+.pg-input-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #2c2f33;
+  background: #2f3136;
+}
+
+.pg-input-field {
+  flex: 1;
+  background: #40444b;
+  border: 1px solid #2c2f33;
+  border-radius: 20px;
+  color: #dcddde;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pg-input-field:focus {
+  border-color: #5865f2;
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
+}
+
+.pg-input-field::placeholder {
+  color: #72767d;
+}
+
+.pg-send {
+  background: #5865f2;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pg-send:hover {
+  background: #4752c4;
+  transform: scale(1.05);
+}
+
+.pg-send:active {
+  transform: scale(0.95);
+}
+
+/* Scrollbar styling */
+.pg-list::-webkit-scrollbar,
+.pg-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pg-list::-webkit-scrollbar-track,
+.pg-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pg-list::-webkit-scrollbar-thumb,
+.pg-messages::-webkit-scrollbar-thumb {
+  background: #2c2f33;
+  border-radius: 4px;
+}
+
+.pg-list::-webkit-scrollbar-thumb:hover,
+.pg-messages::-webkit-scrollbar-thumb:hover {
+  background: #40444b;
+}
+
+@media (max-width: 600px) {
+  .private-groups-panel {
+    max-width: 95vw;
+  }
+
+  .pg-list {
+    width: 150px;
+  }
+
+  .pg-item-name {
+    font-size: 0.9rem;
+  }
+}
