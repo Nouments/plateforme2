@@ -108,4 +108,31 @@ export const api = {
       body: form,
     })
   },
+  // Private Messages
+  getPrivateMessages: (userId) => request(`/api/messages/private/${userId}`),
+  sendPrivateMessage: (userId, content) =>
+    request(`/api/messages/private/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
+  // Profile
+  updatePassword: (currentPassword, newPassword) =>
+    request('/api/profile/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+  // Private Groups
+  getPrivateGroups: () => request('/api/private-groups'),
+  createPrivateGroup: (payload) =>
+    request('/api/private-groups', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  getPrivateGroupMessages: (groupId) =>
+    request(`/api/private-groups/${groupId}/messages`),
+  sendPrivateGroupMessage: (groupId, content) =>
+    request(`/api/private-groups/${groupId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
 }

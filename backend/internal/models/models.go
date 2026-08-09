@@ -153,3 +153,59 @@ type Meeting struct {
 	Room         string     `gorm:"size:255;not null" json:"room"`
 	Participants string     `gorm:"type:text;not null" json:"participants"`
 }
+
+// PrivateMessage for direct messaging between users
+type PrivateMessage struct {
+	ID        uint       `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `gorm:"index" json:"-"`
+	SenderID  uint       `gorm:"index;not null" json:"senderId"`
+	Sender    User       `gorm:"foreignKey:SenderID" json:"sender"`
+	ReceiverID uint      `gorm:"index;not null" json:"receiverId"`
+	Receiver  User       `gorm:"foreignKey:ReceiverID" json:"-"`
+	Content   string     `gorm:"type:text;not null" json:"content"`
+	IsRead    bool       `gorm:"not null;default:false" json:"isRead"`
+}
+
+// PrivateGroup for fraternity groups (created by users, not visible to admins)
+type PrivateGroup struct {
+	ID           uint       `gorm:"primarykey" json:"id"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+	DeletedAt    *time.Time `gorm:"index" json:"-"`
+	Name         string     `gorm:"size:255;not null" json:"name"`
+	Description  string     `gorm:"type:text" json:"description"`
+	CreatorID    uint       `gorm:"index;not null" json:"creatorId"`
+	Creator      User       `gorm:"foreignKey:CreatorID" json:"creator"`
+	Members      []PrivateGroupMember `gorm:"foreignKey:GroupID;constraint:OnDelete:CASCADE" json:"members"`
+	Messages     []PrivateGroupMessage `gorm:"foreignKey:GroupID;constraint:OnDelete:CASCADE" json:"-"`
+	IsPrivate    bool       `gorm:"not null;default:true" json:"isPrivate"`
+	MaxMembers   int        `gorm:"not null;default:50" json:"maxMembers"`
+}
+
+// PrivateGroupMember for membership in private groups
+type PrivateGroupMember struct {
+	ID        uint       `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `gorm:"index" json:"-"`
+	GroupID   uint       `gorm:"uniqueIndex:idx_group_user;index;not null" json:"groupId"`
+	Group     PrivateGroup `gorm:"foreignKey:GroupID" json:"-"`
+	UserID    uint       `gorm:"uniqueIndex:idx_group_user;index;not null" json:"userId"`
+	User      User       `gorm:"foreignKey:UserID" json:"user"`
+	Role      string     `gorm:"size:80;not null" json:"role"` // owner, member
+}
+
+// PrivateGroupMessage for messages in private groups
+type PrivateGroupMessage struct {
+	ID        uint       `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `gorm:"index" json:"-"`
+	GroupID   uint       `gorm:"index;not null" json:"groupId"`
+	Group     PrivateGroup `gorm:"foreignKey:GroupID" json:"-"`
+	AuthorID  uint       `gorm:"index;not null" json:"authorId"`
+	Author    string     `gorm:"size:255;not null" json:"author"`
+	Content   string     `gorm:"type:text;not null" json:"content"`
+}

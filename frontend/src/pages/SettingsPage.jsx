@@ -86,10 +86,7 @@ export function SettingsPage({ user, onBack, onLogout }) {
 
     setLoading(true)
     try {
-      await api.updateUser?.(user?.id, {
-        currentPassword: passwordData.current,
-        password: passwordData.new,
-      })
+      await api.updatePassword(passwordData.current, passwordData.new)
       setSuccess('Mot de passe changé avec succès')
       setPasswordData({ current: '', new: '', confirm: '' })
     } catch (err) {

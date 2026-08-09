@@ -465,7 +465,7 @@ func Start() {
 				return
 			}
 			if !canUploadFile(dbConn, user, channel) {
-				c.JSON(http.StatusForbidden, gin.H{"error": "seuls les professeurs assignés et l'administrateur peuvent envoyer des fichiers"})
+				c.JSON(http.StatusForbidden, gin.H{"error": "seul l'administrateur peut envoyer des fichiers"})
 				return
 			}
 
@@ -523,6 +523,245 @@ func Start() {
 			}
 			c.JSON(http.StatusOK, gin.H{"meetings": meetings})
 		})
+
+		// Profile - Change password
+		apiGroup.PUT("/profile/password", func(c *gin.Context) {
+			user := currentUser(c)
+			var body struct {
+				CurrentPassword string `json:"currentPassword"`
+				NewPassword     string `json:"newPassword"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "données invalides"})
+				return
+			}
+
+			dbUser, err := authService.GetUserByID(user.ID)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "utilisateur introuvable"})
+				return
+			}
+
+			if err := auth.VerifyPassword(dbUser.PasswordHash, body.CurrentPassword); err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "mot de passe actuel incorrect"})
+				return
+			}
+
+			newHash, err := auth.HashPassword(body.NewPassword)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "erreur serveur"})
+				return
+			}
+
+			if err := dbConn.Model(&models.User{}).Where("id = ?", user.ID).Update("password_hash", newHash).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible de mettre à jour le mot de passe"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"message": "mot de passe changé avec succès"})
+		})
+
+		// Private Messages
+		apiGroup.GET("/messages/private/:userId", func(c *gin.Context) {
+			user := currentUser(c)
+			userId, ok := parseUintParam(c, "userId")
+			if !ok {
+				return
+			}
+
+			var messages []models.PrivateMessage
+			query := dbConn.
+				Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
+					user.ID, userId, userId, user.ID).
+				Order("created_at asc").
+				Find(&messages)
+
+			if query.Error != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible de charger les messages"})
+				return
+			}
+
+			// Mark as read
+			dbConn.Model(&models.PrivateMessage{}).
+				Where("receiver_id = ? AND sender_id = ? AND is_read = false", user.ID, userId).
+				Update("is_read", true)
+
+			c.JSON(http.StatusOK, gin.H{"messages": messages})
+		})
+
+		apiGroup.POST("/messages/private/:userId", func(c *gin.Context) {
+			user := currentUser(c)
+			userId, ok := parseUintParam(c, "userId")
+			if !ok {
+				return
+			}
+
+			var body struct {
+				Content string `json:"content"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "contenu requis"})
+				return
+			}
+
+			message := models.PrivateMessage{
+				SenderID:   user.ID,
+				ReceiverID: userId,
+				Content:    strings.TrimSpace(body.Content),
+				IsRead:     false,
+			}
+
+			if err := dbConn.Create(&message).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible d'envoyer le message"})
+				return
+			}
+
+			c.JSON(http.StatusCreated, gin.H{"message": message})
+		})
+
+		// Private Groups (Fraternité)
+		apiGroup.GET("/private-groups", func(c *gin.Context) {
+			user := currentUser(c)
+			var groups []models.PrivateGroup
+
+			query := dbConn.
+				Preload("Creator").
+				Preload("Members.User").
+				Joins("JOIN private_group_members ON private_group_members.group_id = private_groups.id").
+				Where("private_group_members.user_id = ? AND private_group_members.deleted_at IS NULL", user.ID).
+				Order("private_groups.created_at desc").
+				Find(&groups)
+
+			if query.Error != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible de charger les groupes"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"groups": groups})
+		})
+
+		apiGroup.POST("/private-groups", func(c *gin.Context) {
+			user := currentUser(c)
+
+			// Check if user already created 3 groups
+			var count int64
+			dbConn.Model(&models.PrivateGroup{}).Where("creator_id = ?", user.ID).Count(&count)
+			if count >= 3 {
+				c.JSON(http.StatusForbidden, gin.H{"error": "vous pouvez créer maximum 3 groupes"})
+				return
+			}
+
+			var body struct {
+				Name        string   `json:"name"`
+				Description string   `json:"description"`
+				MemberIDs   []uint   `json:"memberIds"`
+			}
+
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "données invalides"})
+				return
+			}
+
+			group := models.PrivateGroup{
+				Name:        strings.TrimSpace(body.Name),
+				Description: strings.TrimSpace(body.Description),
+				CreatorID:   user.ID,
+				IsPrivate:   true,
+			}
+
+			if err := dbConn.Transaction(func(tx *gorm.DB) error {
+				if err := tx.Create(&group).Error; err != nil {
+					return err
+				}
+
+				// Add creator as owner
+				if err := tx.Create(&models.PrivateGroupMember{
+					GroupID: group.ID,
+					UserID:  user.ID,
+					Role:    "owner",
+				}).Error; err != nil {
+					return err
+				}
+
+				// Add other members
+				for _, memberId := range body.MemberIDs {
+					if memberId != user.ID {
+						if err := tx.Create(&models.PrivateGroupMember{
+							GroupID: group.ID,
+							UserID:  memberId,
+							Role:    "member",
+						}).Error; err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
+			}); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible de créer le groupe"})
+				return
+			}
+
+			if err := dbConn.Preload("Creator").Preload("Members.User").First(&group, group.ID).Error; err != nil {
+				c.JSON(http.StatusCreated, gin.H{"group": group})
+				return
+			}
+
+			c.JSON(http.StatusCreated, gin.H{"group": group})
+		})
+
+		apiGroup.GET("/private-groups/:id/messages", func(c *gin.Context) {
+			user := currentUser(c)
+			groupId, ok := parseUintParam(c, "id")
+			if !ok {
+				return
+			}
+
+			// Check if user is member
+			var member models.PrivateGroupMember
+			if err := dbConn.Where("group_id = ? AND user_id = ?", groupId, user.ID).First(&member).Error; err != nil {
+				c.JSON(http.StatusForbidden, gin.H{"error": "accès refusé"})
+				return
+			}
+
+			var messages []models.PrivateGroupMessage
+			if err := dbConn.Where("group_id = ?", groupId).Order("created_at asc").Find(&messages).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible de charger les messages"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"messages": messages})
+		})
+
+		apiGroup.POST("/private-groups/:id/messages", func(c *gin.Context) {
+			user := currentUser(c)
+			groupId, ok := parseUintParam(c, "id")
+			if !ok {
+				return
+			}
+
+			var body struct {
+				Content string `json:"content"`
+			}
+			if err := c.ShouldBindJSON(&body); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "contenu requis"})
+				return
+			}
+
+			message := models.PrivateGroupMessage{
+				GroupID: groupId,
+				AuthorID: user.ID,
+				Author:  user.Name,
+				Content: strings.TrimSpace(body.Content),
+			}
+
+			if err := dbConn.Create(&message).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "impossible d'envoyer le message"})
+				return
+			}
+
+			c.JSON(http.StatusCreated, gin.H{"message": message})
+		})
 	}
 
 	router.GET("/ws/chat", func(c *gin.Context) {
@@ -568,6 +807,10 @@ func migrate(dbConn *gorm.DB) error {
 		&models.Announcement{},
 		&models.FileResource{},
 		&models.Meeting{},
+		&models.PrivateMessage{},
+		&models.PrivateGroup{},
+		&models.PrivateGroupMember{},
+		&models.PrivateGroupMessage{},
 	)
 }
 
@@ -861,16 +1104,8 @@ func canUploadFile(dbConn *gorm.DB, user *auth.User, channel models.Channel) boo
 	if channel.Type != channelTypeFiles {
 		return false
 	}
-	if user.Role == roleAdmin {
-		return true
-	}
-	if user.Role != roleTeacher {
-		return false
-	}
-	if channel.Server.Type == serverTypeClass && channel.Server.ClassID != nil {
-		return isClassMember(dbConn, user.ID, *channel.Server.ClassID, roleTeacher)
-	}
-	return true
+	// Seul l'administrateur peut envoyer des fichiers
+	return user.Role == roleAdmin
 }
 
 func canAccessServer(dbConn *gorm.DB, user *auth.User, serverID uint) bool {

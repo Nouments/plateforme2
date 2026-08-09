@@ -1,0 +1,269 @@
+.file-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: #383a40;
+  border-radius: 8px;
+  border: 1px solid #2c2f33;
+}
+
+.file-upload-area {
+  position: relative;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #5865f2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.file-upload-button:hover:not(:disabled) {
+  background: #4752c4;
+  transform: translateY(-2px);
+}
+
+.file-upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* File List */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.file-list-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #dcddde;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #2b2d31;
+  border-radius: 6px;
+  border: 1px solid #1e1f22;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: #dcddde;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 0.8rem;
+  color: #8e9297;
+}
+
+.file-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Progress */
+.file-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #1e1f22;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #5865f2;
+  width: 0;
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.progress-fill.complete {
+  background: #3ba55d;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: #8e9297;
+  white-space: nowrap;
+  min-width: 45px;
+}
+
+/* Error */
+.file-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #ed424505;
+  border: 1px solid #ed4245;
+  border-radius: 4px;
+  color: #ed4245;
+  font-size: 0.8rem;
+}
+
+.file-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #313338;
+  border: none;
+  border-radius: 4px;
+  color: #8e9297;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-remove:hover:not(:disabled) {
+  background: #2b2d31;
+  color: #dcddde;
+}
+
+.file-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Upload Button */
+.upload-submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  background: #3ba55d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.upload-submit-button:hover:not(:disabled) {
+  background: #2d7d46;
+  transform: translateY(-2px);
+}
+
+.upload-submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Summary */
+.upload-error-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #ed424505;
+  border: 1px solid #ed4245;
+  border-radius: 6px;
+  color: #ed4245;
+  font-size: 0.9rem;
+}
+
+.upload-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #ed424505;
+  border: 1px solid #ed4245;
+  border-radius: 6px;
+  color: #ed4245;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .file-status {
+    width: 100%;
+  }
+
+  .file-progress {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .file-remove {
+    align-self: flex-end;
+  }
+}
